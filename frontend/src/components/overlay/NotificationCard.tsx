@@ -11,6 +11,7 @@ interface EventPayload {
   summary: string;
   recommended_action?: string;
   confidence_score: number;
+  intelligence_trace?: string;
 }
 
 interface NotificationCardProps {
@@ -53,6 +54,17 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ event, onDis
         <div className="mt-3 pt-3 border-t border-white/10">
           <p className="text-xs text-slate-400 mb-1">Recommended Action:</p>
           <p className="text-sm text-green-400">{event.recommended_action}</p>
+        </div>
+      )}
+
+      {event.intelligence_trace && (
+        <div className="mt-3 pt-3 border-t border-white/10">
+          <p className="text-xs text-slate-400 mb-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" /> Vector Trace
+          </p>
+          <pre className="text-[10px] text-slate-300 bg-slate-950 p-2 rounded border border-slate-800 whitespace-pre-wrap overflow-x-hidden">
+            {event.intelligence_trace}
+          </pre>
         </div>
       )}
 

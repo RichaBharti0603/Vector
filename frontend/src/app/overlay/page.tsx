@@ -14,7 +14,7 @@ export default function OverlayPage() {
     // Whenever a new event arrives, add it to active flights
     if (events.length > 0) {
       const latestEvent = events[events.length - 1];
-      if (latestEvent.event_type === 'agent_action') {
+      if (latestEvent.event_type.startsWith('VECTOR_') || latestEvent.event_type === 'agent_action') {
         setActiveFlights((prev) => {
           if (!prev.find(p => p.payload.id === latestEvent.payload.id)) {
             return [...prev, latestEvent];
@@ -48,7 +48,7 @@ export default function OverlayPage() {
       <div className="absolute top-10 right-10 flex flex-col items-end z-50">
         <AnimatePresence>
           {events.map((event) => (
-            event.event_type === 'agent_action' && (
+            (event.event_type.startsWith('VECTOR_') || event.event_type === 'agent_action') && (
               <NotificationCard 
                 key={`card-${event.payload.id}`}
                 event={event.payload}

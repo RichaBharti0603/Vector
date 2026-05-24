@@ -25,3 +25,4 @@ class EventPayload(BaseModel):
     recommended_action: Optional[str] = None
     confidence_score: float = 1.0
     metadata: Dict[str, Any] = {}
+    intelligence_trace: Optional[str] = None

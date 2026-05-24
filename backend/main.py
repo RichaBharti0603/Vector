@@ -4,7 +4,9 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from core.event_bus import event_bus
 from core.models import EventPayload, Priority, AgentType
+from core.vector_engine import VectorTriageEngine
 import uuid
+import random
 
 app = FastAPI(title="AI ATC Orchestrator")
 
@@ -121,6 +123,50 @@ async def run_demo_scenario():
         summary="Finding available slot for DevOps team tomorrow",
         confidence_score=0.90
     ))
+
+vector_engine = VectorTriageEngine()
+simulation_task = None
+
+@app.post("/simulate/live/start")
+async def start_live_simulation():
+    global simulation_task
+    if simulation_task is None or simulation_task.done():
+        simulation_task = asyncio.create_task(run_live_simulation())
+        return {"status": "Live simulation started"}
+    return {"status": "Live simulation already running"}
+
+@app.post("/simulate/live/stop")
+async def stop_live_simulation():
+    global simulation_task
+    if simulation_task and not simulation_task.done():
+        simulation_task.cancel()
+        return {"status": "Live simulation stopped"}
+    return {"status": "Live simulation is not running"}
+
+async def run_live_simulation():
+    mock_emails = [
+        {"subject": "Urgent: Production DB Down", "body": "Latency is spiking...", "sender": "pagerduty@company.com"},
+        {"subject": "Security Breach detected", "body": "Multiple failed logins from unknown IP", "sender": "soc@company.com"},
+        {"subject": "Weekly Newsletter", "body": "Here are the updates for this week.", "sender": "internal@company.com"},
+        {"subject": "Important CEO Update", "body": "Please read this soon.", "sender": "boss@ceo.com"},
+        {"subject": "Meeting reschedule", "body": "Can we move our 1-1 to tomorrow?", "sender": "colleague@company.com"},
+    ]
+    
+    try:
+        while True:
+            # Pick a random email
+            email = random.choice(mock_emails)
+            
+            # Process via Vector Engine
+            event_type, payload = vector_engine.process_email(email)
+            
+            # Publish to Event Bus
+            await event_bus.publish(event_type, payload)
+            
+            # Wait 2-5 seconds
+            await asyncio.sleep(random.uniform(2.0, 5.0))
+    except asyncio.CancelledError:
+        pass
 
 if __name__ == "__main__":
     import uvicorn
