@@ -7,7 +7,7 @@ import { NotificationCard } from '@/components/overlay/NotificationCard';
 import { AnimatePresence } from 'framer-motion';
 
 export default function OverlayPage() {
-  const { events, removeEvent } = useWebSocket('ws://localhost:8000/ws');
+  const { events, removeEvent } = useWebSocket('ws://localhost:8001/ws');
   const [activeFlights, setActiveFlights] = useState<any[]>([]);
 
   useEffect(() => {

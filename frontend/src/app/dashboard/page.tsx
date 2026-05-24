@@ -4,7 +4,7 @@ import React from 'react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 
 export default function DashboardPage() {
-  const { events } = useWebSocket('ws://localhost:8000/ws');
+  const { events } = useWebSocket('ws://localhost:8001/ws');
 
   const triggerDemo = async () => {
     try {
