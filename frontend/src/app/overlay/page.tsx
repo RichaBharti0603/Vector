@@ -5,10 +5,13 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { FlightPath } from '@/components/aircraft/FlightPath';
 import { NotificationCard } from '@/components/overlay/NotificationCard';
 import { AnimatePresence } from 'framer-motion';
+import { useButterflyManager } from '@/components/butterfly/useButterflyManager';
+import { Butterfly } from '@/components/butterfly/Butterfly';
 
 export default function OverlayPage() {
   const { events, removeEvent } = useWebSocket('ws://localhost:8001/ws');
   const [activeFlights, setActiveFlights] = useState<any[]>([]);
+  const { butterflies, spawnButterfly, removeButterfly } = useButterflyManager();
 
   useEffect(() => {
     // Whenever a new event arrives, add it to active flights
@@ -21,9 +24,14 @@ export default function OverlayPage() {
           }
           return prev;
         });
+        
+        // Spawn butterflies for AI events
+        if (latestEvent.event_type.startsWith('VECTOR_')) {
+          spawnButterfly(latestEvent.event_type);
+        }
       }
     }
-  }, [events]);
+  }, [events, spawnButterfly]);
 
   const handleAnimationComplete = (id: string) => {
     // Animation finished, remove from flights but keep notification card
@@ -58,6 +66,11 @@ export default function OverlayPage() {
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Butterfly Ambient Layer */}
+      {butterflies.map((b) => (
+        <Butterfly key={b.id} data={b} onComplete={removeButterfly} />
+      ))}
 
     </div>
   );
