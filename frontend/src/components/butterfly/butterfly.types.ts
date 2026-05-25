@@ -9,6 +9,8 @@ export interface ButterflyEntity {
   duration: number;
   scale: number;
   rotation: number;
+  priority?: string;
+  metadata?: any;
 }
 
 export type EventType = 'VECTOR_CLASSIFIED' | 'VECTOR_ESCALATION' | 'VECTOR_SECURITY_ALERT' | string;

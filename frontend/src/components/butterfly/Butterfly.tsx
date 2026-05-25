@@ -49,14 +49,28 @@ export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete, isAmbien
       keyframesY.push(y);
     }
 
+    // Priority specific overrides
+    let customScale = data.scale;
+    let customRotate: any = data.rotation;
+    let customDuration = data.duration;
+    
+    if (data.priority === 'urgent') {
+      customRotate = [data.rotation, data.rotation + 5, data.rotation - 5, data.rotation];
+      customDuration = data.duration * 0.7; // fast
+    } else if (data.priority === 'high') {
+      customDuration = data.duration * 0.8;
+    } else if (data.priority === 'low') {
+      customDuration = data.duration * 1.5; // slow drift
+    }
+
     controls.start({
       x: keyframesX,
       y: keyframesY,
       opacity: [0, 1, 1, 0], // Fade in, hold, fade out
-      rotate: data.rotation,
-      scale: data.scale,
+      rotate: customRotate,
+      scale: customScale,
       transition: {
-        duration: data.duration, // Should be exactly 4 seconds as per core requirement, modified slightly by velocity bonus
+        duration: customDuration,
         ease: "easeInOut",
         times: [0, 0.1, 0.8, 1], // Timing for the opacity fade
       }
@@ -68,11 +82,18 @@ export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete, isAmbien
 
   if (!isMounted) return null;
 
+  let filterClass = "drop-shadow-[0_0_15px_rgba(255,255,255,0.8)]";
+  if (!isAmbient) {
+    if (data.priority === 'urgent') filterClass = "drop-shadow-[0_0_25px_rgba(255,50,50,0.9)]";
+    else if (data.priority === 'high') filterClass = "drop-shadow-[0_0_20px_rgba(100,200,255,1)]";
+    else if (data.priority === 'low') filterClass = "drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]";
+  }
+
   return (
     <motion.div
       initial={{ x: data.startX, y: data.startY, opacity: 0, scale: data.scale, rotate: data.rotation }}
       animate={controls}
-      className="absolute top-0 left-0 pointer-events-none mix-blend-screen drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] z-[100]"
+      className={`absolute top-0 left-0 mix-blend-screen z-[100] ${filterClass}`}
       style={{ width: '100px', height: '100px' }} // Approximate size of butterfly
     >
       <video
@@ -83,6 +104,19 @@ export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete, isAmbien
         playsInline
         className="w-full h-full object-contain pointer-events-none"
       />
+      
+      {/* Tooltip */}
+      {!isAmbient && data.metadata && data.metadata.original_sender && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-48 bg-black/80 backdrop-blur-md border border-white/10 rounded-lg p-2 text-white text-xs shadow-xl z-[110]"
+        >
+          <div className="font-semibold text-cyan-400 truncate">{data.metadata.original_sender}</div>
+          <div className="text-zinc-300 truncate mt-1">{data.metadata.original_subject}</div>
+        </motion.div>
+      )}
     </motion.div>
   );
 };

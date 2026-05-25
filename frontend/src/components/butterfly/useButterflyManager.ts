@@ -22,7 +22,7 @@ export const useButterflyManager = () => {
     });
   }, []);
 
-  const spawnButterfly = useCallback((eventType: string) => {
+  const spawnButterfly = useCallback((eventType: string, payload?: any) => {
     // Determine configuration
     const config = EVENT_BUTTERFLY_MAP[eventType];
     if (!config) return;
@@ -80,7 +80,9 @@ export const useButterflyManager = () => {
           endY,
           duration,
           scale,
-          rotation
+          rotation,
+          priority: payload?.priority || 'low',
+          metadata: payload?.metadata || {}
         });
 
         currentCount++;

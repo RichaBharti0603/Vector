@@ -126,7 +126,7 @@ export default function LandingPage() {
           
           <CTAButton 
             variant="secondary" 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => router.push('/connect-inbox')}
             className="w-full sm:w-auto"
           >
             CONNECT EMAIL INBOX

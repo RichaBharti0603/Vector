@@ -27,7 +27,7 @@ export default function OverlayPage() {
         
         // Spawn butterflies for AI events
         if (latestEvent.event_type.startsWith('VECTOR_')) {
-          spawnButterfly(latestEvent.event_type);
+          spawnButterfly(latestEvent.event_type, latestEvent.payload);
         }
       }
     }

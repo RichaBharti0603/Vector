@@ -73,7 +73,12 @@ class VectorTriageEngine:
             summary=summary,
             recommended_action=recommended_action,
             confidence_score=confidence,
-            metadata={"rl_action": action, "rl_obs": obs.tolist()},
+            metadata={
+                "rl_action": action, 
+                "rl_obs": obs.tolist(),
+                "original_sender": email_payload.get("sender", "Unknown"),
+                "original_subject": email_payload.get("subject", "No Subject")
+            },
             intelligence_trace=intelligence_trace
         )
         
