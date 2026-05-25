@@ -1,65 +1,200 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CTAButton } from '@/components/ui/CTAButton';
+import { AmbientButterflyLayer } from '@/components/butterfly/AmbientButterflyLayer';
+import { useButterflyManager } from '@/components/butterfly/useButterflyManager';
+import { Butterfly } from '@/components/butterfly/Butterfly';
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const { butterflies, spawnButterfly, removeButterfly } = useButterflyManager();
+
+  // Watch Simulation Mode Logic
+  useEffect(() => {
+    if (!isSimulating) return;
+
+    // Start local event generator
+    const interval = setInterval(() => {
+      const randomEvent = Math.random() > 0.8 ? 'VECTOR_ESCALATION' : 'VECTOR_CLASSIFIED';
+      spawnButterfly(randomEvent);
+    }, 2500);
+
+    return () => clearInterval(interval);
+  }, [isSimulating, spawnButterfly]);
+
+  const handleStartDemo = async () => {
+    // Fire and forget, mock endpoint for now
+    try {
+      await fetch('/api/demo/start', { method: 'POST' }).catch(() => {});
+    } catch (e) {}
+    
+    router.push('/overlay'); // Or /dashboard based on preference
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#050505] text-white font-sans selection:bg-cyan-500/30">
+      {/* Background Gradient Mesh */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#0A192F] via-[#050505] to-black opacity-80 z-0"></div>
+      
+      {/* Radar Sweep Line (Bonus) */}
+      <div className="absolute inset-0 z-0 overflow-hidden opacity-20 pointer-events-none">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute top-1/2 left-1/2 w-[150vw] h-[150vw] -translate-x-1/2 -translate-y-1/2 origin-center rounded-full bg-[conic-gradient(from_0deg,transparent_0deg,transparent_320deg,rgba(0,255,255,0.1)_360deg)]"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+        {/* Radar grid circles */}
+        <div className="absolute top-1/2 left-1/2 w-[40vw] h-[40vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/10" />
+        <div className="absolute top-1/2 left-1/2 w-[80vw] h-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-500/10" />
+      </div>
+
+      {/* Ambient Butterfly Layer */}
+      <AmbientButterflyLayer />
+
+      {/* Active Butterflies Layer (Simulation) */}
+      {butterflies.map((b) => (
+        <Butterfly key={b.id} data={b} onComplete={removeButterfly} />
+      ))}
+
+      {/* System Status Indicator (Bonus) */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 2 }}
+        className="absolute top-6 left-6 z-50 flex items-center gap-3 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/5"
+      >
+        <span className="relative flex h-3 w-3">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-500"></span>
+        </span>
+        <span className="text-xs font-mono tracking-widest text-cyan-500/80">VECTOR SYSTEM ONLINE</span>
+      </motion.div>
+
+      {/* Main Content */}
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 text-center">
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="mb-6"
+        >
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white via-blue-100 to-cyan-500 drop-shadow-[0_0_20px_rgba(0,255,255,0.2)]">
+            VECTOR
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 1 }}
+          className="max-w-2xl mx-auto mb-12"
+        >
+          <h2 className="text-xl md:text-2xl text-zinc-300 font-light mb-4">
+            AI Air Traffic Control for Enterprise Communication
+          </h2>
+          
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5, duration: 2 }}
+            className="text-lg text-cyan-400/80 font-mono tracking-wider"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            &gt; Emails don&apos;t arrive. They fly.
+          </motion.p>
+        </motion.div>
+
+        {/* CTAs */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-lg mx-auto"
+        >
+          <CTAButton 
+            variant="primary" 
+            onClick={handleStartDemo}
+            className="w-full sm:w-auto"
           >
-            Documentation
-          </a>
-        </div>
+            START LIVE DEMO
+          </CTAButton>
+          
+          <CTAButton 
+            variant="secondary" 
+            onClick={() => setIsModalOpen(true)}
+            className="w-full sm:w-auto"
+          >
+            CONNECT EMAIL INBOX
+          </CTAButton>
+          
+          <CTAButton 
+            variant="tertiary" 
+            onClick={() => setIsSimulating(!isSimulating)}
+            className="w-full sm:w-auto"
+          >
+            {isSimulating ? 'STOP SIMULATION' : 'WATCH SIMULATION'}
+          </CTAButton>
+        </motion.div>
+
       </main>
+
+      {/* Connect Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
+            >
+              {/* Glass reflection */}
+              <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              <h3 className="text-2xl font-semibold mb-2 text-white">Connect Data Source</h3>
+              <p className="text-zinc-400 mb-8">Select how you want to route messages into Vector.</p>
+              
+              <div className="space-y-4">
+                <button 
+                  disabled
+                  className="w-full p-4 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between opacity-50 cursor-not-allowed"
+                >
+                  <span className="font-medium text-white">Google Workspace</span>
+                  <span className="text-xs bg-white/10 px-2 py-1 rounded text-zinc-300">Coming Soon</span>
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    alert('Webhook endpoint generation would happen here in production.');
+                    setIsModalOpen(false);
+                  }}
+                  className="w-full p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 flex items-center justify-between hover:bg-cyan-500/20 transition-colors group"
+                >
+                  <span className="font-medium text-cyan-400">Custom Webhook</span>
+                  <span className="text-xs bg-cyan-500/20 text-cyan-300 px-2 py-1 rounded group-hover:bg-cyan-500/30 transition-colors">Recommended</span>
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="mt-8 w-full py-3 text-sm text-zinc-500 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -7,15 +7,33 @@ import { ButterflyEntity } from './butterfly.types';
 interface ButterflyProps {
   data: ButterflyEntity;
   onComplete: (id: string) => void;
+  isAmbient?: boolean;
 }
 
-export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete }) => {
+export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete, isAmbient = false }) => {
   const controls = useAnimationControls();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
     
+    if (isAmbient) {
+      // Ambient mode: very slow drift, low opacity, infinite loop
+      controls.start({
+        x: [data.startX, data.endX, data.startX],
+        y: [data.startY, data.endY, data.startY],
+        opacity: [0.1, 0.4, 0.1], // Very low opacity
+        rotate: [data.rotation, data.rotation + 10, data.rotation],
+        scale: data.scale,
+        transition: {
+          duration: 30 + Math.random() * 20, // 30-50 seconds for a full loop
+          ease: "linear",
+          repeat: Infinity,
+        }
+      });
+      return;
+    }
+
     // We animate x and y over the given duration. 
     // To simulate a curve without SVG motion paths, we can use an array of keyframes for a bezier curve.
     const steps = 20;
