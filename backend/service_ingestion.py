@@ -52,21 +52,40 @@ async def stop_live_simulation():
         return {"status": "Live simulation stopped"}
     return {"status": "Live simulation is not running"}
 
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "ingestion",
+        "redis_connected": redis_bus.is_connected
+    }
+
 async def run_live_simulation():
-    mock_emails = [
-        {"subject": "Urgent: Production DB Down", "body": "Latency is spiking...", "sender": "pagerduty@company.com"},
-        {"subject": "Security Breach detected", "body": "Multiple failed logins from unknown IP", "sender": "soc@company.com"},
-        {"subject": "Weekly Newsletter", "body": "Here are the updates for this week.", "sender": "internal@company.com"},
-        {"subject": "Important CEO Update", "body": "Please read this soon.", "sender": "boss@ceo.com"},
-        {"subject": "Meeting reschedule", "body": "Can we move our 1-1 to tomorrow?", "sender": "colleague@company.com"},
+    # Deterministic sequence that tells a story:
+    # 1. Routine
+    # 2. High Priority (Security)
+    # 3. Urgent (DB Down - Escalation)
+    mock_sequence = [
+        {"subject": "Weekly Newsletter", "body": "Here are the updates for this week.", "sender": "internal@company.com", "delay": 2.0},
+        {"subject": "Security Breach detected", "body": "Multiple failed logins from unknown IP", "sender": "soc@company.com", "delay": 4.0},
+        {"subject": "Urgent: Production DB Down", "body": "Latency is spiking...", "sender": "pagerduty@company.com", "delay": 5.0},
     ]
     
     try:
+        # We loop the sequence
         while True:
-            email = random.choice(mock_emails)
-            logger.info(f"Simulating email: {email['subject']}")
-            await redis_bus.publish("STREAM_RAW_EMAILS", email)
-            await asyncio.sleep(random.uniform(2.0, 5.0))
+            for item in mock_sequence:
+                await asyncio.sleep(item["delay"])
+                email = {
+                    "subject": item["subject"],
+                    "body": item["body"],
+                    "sender": item["sender"]
+                }
+                logger.info(f"Simulating email: {email['subject']}")
+                await redis_bus.publish("STREAM_RAW_EMAILS", email)
+                
+            # Add a longer pause before restarting sequence
+            await asyncio.sleep(8.0)
     except asyncio.CancelledError:
         logger.info("Simulation task cancelled")
 
@@ -74,3 +93,4 @@ if __name__ == "__main__":
     import uvicorn
     # Gateway is on 8001, so Ingestion will be on 8000
     uvicorn.run("service_ingestion:app", host="0.0.0.0", port=8000, reload=False)
+

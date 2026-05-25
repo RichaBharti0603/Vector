@@ -46,6 +46,16 @@ async def consume_ui_events():
         logger.info(f"Gateway sending UI event: {payload.get('event_type')}")
         await manager.broadcast(json.dumps(payload))
 
+@app.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "gateway",
+        "redis_connected": redis_bus.is_connected,
+        "active_ws_connections": len(manager.active_connections)
+    }
+
+
 @app.on_event("startup")
 async def startup_event():
     await redis_bus.connect()
