@@ -33,11 +33,15 @@ function Cleanup {
     Write-Host "Shutdown complete." -ForegroundColor Green
     exit
 }
-[Console]::TreatControlCAsInput = $false
-[System.Console]::CancelKeyPress += {
-    $_.Cancel = $true
-    Cleanup
-}
+try {
+    [Console]::TreatControlCAsInput = $false
+} catch {}
+try {
+    [System.Console]::CancelKeyPress += {
+        $_.Cancel = $true
+        Cleanup
+    }
+} catch {}
 
 # 3. Start Backend Services
 Write-Host "[2/4] Igniting Backend Microservices..." -ForegroundColor Yellow

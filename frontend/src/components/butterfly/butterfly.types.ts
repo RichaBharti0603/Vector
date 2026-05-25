@@ -24,4 +24,5 @@ export const EVENT_BUTTERFLY_MAP: Record<string, ButterflyConfig> = {
   VECTOR_CLASSIFIED: { count: 1, speed: 'slow' },
   VECTOR_ESCALATION: { count: 4, speed: 'fast' }, // 3-6 average
   VECTOR_SECURITY_ALERT: { count: 9, speed: 'aggressive' }, // 6-12 average
+  VECTOR_EMAIL_ALERT: { count: 1, speed: 'fast' },
 };

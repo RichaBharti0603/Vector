@@ -8,17 +8,20 @@ class OAuthManager:
         self._tokens: Dict[str, TokenData] = {}
 
     def save_token(self, user_id: str, token_data: TokenData):
-        self._tokens[user_id] = token_data
+        key = f"{user_id}:{token_data.provider}"
+        self._tokens[key] = token_data
 
-    def get_token(self, user_id: str) -> Optional[TokenData]:
-        token = self._tokens.get(user_id)
+    def get_token(self, user_id: str, provider: str) -> Optional[TokenData]:
+        key = f"{user_id}:{provider}"
+        token = self._tokens.get(key)
         if token and token.expires_at and token.expires_at < time.time():
             # Handle refresh logic here in production
             pass
         return token
 
     def is_connected(self, user_id: str, provider: str) -> bool:
-        token = self._tokens.get(user_id)
-        return bool(token and token.provider == provider)
+        key = f"{user_id}:{provider}"
+        token = self._tokens.get(key)
+        return bool(token)
 
 oauth_manager = OAuthManager()

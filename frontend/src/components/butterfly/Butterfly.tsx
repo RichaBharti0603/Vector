@@ -105,16 +105,26 @@ export const Butterfly: React.FC<ButterflyProps> = ({ data, onComplete, isAmbien
         className="w-full h-full object-contain pointer-events-none"
       />
       
-      {/* Tooltip */}
-      {!isAmbient && data.metadata && data.metadata.original_sender && (
+      {/* Tooltip / Floating Label */}
+      {!isAmbient && data.metadata && (data.metadata.subject || data.metadata.original_subject) && (
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-48 bg-black/80 backdrop-blur-md border border-white/10 rounded-lg p-2 text-white text-xs shadow-xl z-[110]"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="absolute left-full top-1/2 -translate-y-1/2 ml-3 bg-black/80 backdrop-blur-md border border-cyan-500/30 rounded-lg py-1.5 px-3 text-white text-xs shadow-[0_0_15px_rgba(6,182,212,0.15)] z-[110] whitespace-nowrap pointer-events-none"
         >
-          <div className="font-semibold text-cyan-400 truncate">{data.metadata.original_sender}</div>
-          <div className="text-zinc-300 truncate mt-1">{data.metadata.original_subject}</div>
+          {data.metadata.subject ? (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-mono text-cyan-400/80 tracking-wider uppercase">{data.metadata.provider || 'email'} alert</span>
+              <span className="font-semibold text-zinc-100">{data.metadata.subject}</span>
+              {data.metadata.from && <span className="text-[9px] text-zinc-400">from: {data.metadata.from}</span>}
+            </div>
+          ) : (
+            <>
+              <div className="font-semibold text-cyan-400 truncate">{data.metadata.original_sender}</div>
+              <div className="text-zinc-300 truncate mt-0.5">{data.metadata.original_subject}</div>
+            </>
+          )}
         </motion.div>
       )}
     </motion.div>

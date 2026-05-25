@@ -18,7 +18,7 @@ export default function ConnectInboxPage() {
   const checkStatus = async () => {
     try {
       // In production, user_id would be pulled from context/auth
-      const res = await fetch('http://localhost:8002/status?user_id=user_1');
+      const res = await fetch('http://localhost:8000/status?user_id=user_1');
       if (res.ok) {
         const data = await res.json();
         setStatus(data);
@@ -34,15 +34,9 @@ export default function ConnectInboxPage() {
     checkStatus();
   }, []);
 
-  const handleConnect = async (provider: 'gmail' | 'outlook') => {
-    // Mock OAuth redirect loop
-    const code = 'mock_auth_code_123';
-    try {
-      await fetch(`http://localhost:8002/auth/${provider}?code=${code}&user_id=user_1`);
-      checkStatus();
-    } catch (e) {
-      console.error('Failed to authenticate', e);
-    }
+  const handleConnect = (provider: 'gmail' | 'outlook') => {
+    // Redirect to backend OAuth login endpoint
+    window.location.href = `http://localhost:8000/auth/${provider}/login?user_id=user_1`;
   };
 
   return (
